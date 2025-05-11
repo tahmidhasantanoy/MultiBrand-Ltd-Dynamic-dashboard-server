@@ -178,6 +178,38 @@ async function run() {
         res.status(500).json({ success: false, message: "Server error" });
       }
     });
+
+    // delete users data
+    app.delete(
+      "/api/v1/delete-user-info/:id",
+      verifyToken,
+      async (req, res) => {
+        try {
+          const { id } = req.params;
+
+          if (!ObjectId.isValid(id)) {
+            return res
+              .status(400)
+              .json({ success: false, message: "Invalid ID" });
+          }
+
+          const result = await usersInfoCollection.deleteOne({
+            _id: new ObjectId(id),
+          });
+
+          if (result.deletedCount === 0) {
+            return res
+              .status(404)
+              .json({ success: false, message: "User not found" });
+          }
+
+          res.json({ success: true, message: "User deleted", data: result });
+        } catch (error) {
+          console.error("Error deleting user:", error);
+          res.status(500).json({ success: false, message: "Server error" });
+        }
+      }
+    );
   } finally {
   }
 }
